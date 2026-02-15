@@ -1,21 +1,44 @@
-// send welcome email and OTP email using nodemailer
+// send welcome email and OTP email using nodemailer (SendGrid or Gmail)
 const nodemailer = require("nodemailer");
 
 let transporter = null;
 
+function getFromAddress() {
+  const sendgridEmail = process.env.SENDGRID_FROM_EMAIL;
+  const smtpUser = process.env.SMTP_USER;
+  const email = sendgridEmail || smtpUser || "noreply@ridepooling.com";
+  return { name: "Smart Airport Ride Pooling", address: email };
+}
+
 function getTransporter() {
   if (transporter) return transporter;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  if (!user || !pass) {
-    console.error("SMTP missing: Set SMTP_USER and SMTP_PASS in Render Environment (or .env locally).");
+  const sendgridKey = process.env.SENDGRID_API_KEY;
+
+  if (sendgridKey) {
+    transporter = nodemailer.createTransport({
+      host: "smtp.sendgrid.net",
+      port: 587,
+      secure: false,
+      auth: {
+        user: "apikey",
+        pass: sendgridKey,
+      },
+      connectionTimeout: 120000,
+      greetingTimeout: 120000,
+    });
+  } else {
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    if (!user || !pass) {
+      console.error("SMTP missing: Set SENDGRID_API_KEY + SENDGRID_FROM_EMAIL, or SMTP_USER + SMTP_PASS");
+    }
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user, pass },
+      connectionTimeout: 120000,
+      greetingTimeout: 120000,
+    });
   }
-  transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: { user, pass },
-    connectionTimeout: 120000,
-    greetingTimeout: 120000,
-  });
   return transporter;
 }
 
@@ -23,7 +46,7 @@ async function sendWelcomeMail(email, name) {
   try {
     const transport = getTransporter();
     await transport.sendMail({
-      from: process.env.SMTP_USER || "noreply@ridepooling.com",
+      from: getFromAddress(),
       to: email,
       subject: "Welcome! You are now part of our journey",
       html: `
@@ -50,7 +73,7 @@ async function sendOtpMail(email, otp, type) {
     let subject = "Your Login OTP - Smart Airport Ride Pooling";
     if (type === "signup") subject = "Your Signup OTP - Smart Airport Ride Pooling";
     await transport.sendMail({
-      from: process.env.SMTP_USER || "noreply@ridepooling.com",
+      from: getFromAddress(),
       to: email,
       subject: subject,
       html: `

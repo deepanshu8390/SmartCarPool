@@ -140,7 +140,7 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-// Google login - frontend sends idToken from Google, we create/find user and return our token
+// Google login 
 const googleLogin = async (req, res) => {
   try {
     const idToken = req.body.idToken;

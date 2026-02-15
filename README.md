@@ -21,10 +21,10 @@ Backend system for grouping passengers into shared cabs with route optimization 
    npm install
    ```
 
-2. Create env file in the **backend** folder (name: `env`). Add:
+2. Create env file in the **backend** folder (`.env`). Add:
    - MONGODB_URI
    - JWT_SECRET
-   - SMTP_USER, SMTP_PASS (for email)
+   - For email: **Gmail** (SMTP_USER, SMTP_PASS) works on localhost. **On Render, Gmail SMTP often times out**; use **SendGrid** (SENDGRID_API_KEY, SENDGRID_FROM_EMAIL) for reliable OTP delivery.
    - GOOGLE_CLIENT_ID (for Google login)
 
 3. Start MongoDB (local or Atlas)
