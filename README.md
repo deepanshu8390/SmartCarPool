@@ -10,7 +10,7 @@ Backend system for grouping passengers into shared cabs with route optimization 
 - Node.js + Express
 - MongoDB + Mongoose
 - JWT, Helmet, CORS
-- Nodemailer (welcome mail, OTP)
+- SendGrid (OTP and welcome email via API; no SMTP)
 - Google OAuth
 - Zod (validation)
 

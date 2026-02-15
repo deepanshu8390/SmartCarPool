@@ -35,10 +35,8 @@ const signupOtp = async (req, res) => {
       expiresAt: new Date(Date.now() + constants.OTP_EXPIRY_MINUTES * 60 * 1000),
     });
 
-    const emailSent = await emailService.sendOtpMail(email, otpCode, "signup");
-    if (!emailSent) {
-      return response.error(res, "Failed to send OTP email. Check SMTP config or try again.", 500);
-    }
+    // send email in background so request returns fast (avoids 502 on Render)
+    emailService.sendOtpMail(email, otpCode, "signup").catch((e) => console.error("Signup OTP email error:", e.message));
     return response.success(res, { message: "OTP sent to your email" }, 200);
   } catch (err) {
     return response.error(res, err.message || "Failed to send OTP", 500);
@@ -68,10 +66,8 @@ const loginOtp = async (req, res) => {
       expiresAt: new Date(Date.now() + constants.OTP_EXPIRY_MINUTES * 60 * 1000),
     });
 
-    const emailSent = await emailService.sendOtpMail(user.email, otpCode, "login");
-    if (!emailSent) {
-      return response.error(res, "Failed to send OTP email. Check SMTP config or try again.", 500);
-    }
+    // send email in background so request returns fast (avoids 502 on Render)
+    emailService.sendOtpMail(user.email, otpCode, "login").catch((e) => console.error("Login OTP email error:", e.message));
     return response.success(res, { message: "OTP sent to your email" }, 200);
   } catch (err) {
     return response.error(res, err.message || "Failed to send OTP", 500);
@@ -107,7 +103,7 @@ const verifyOtp = async (req, res) => {
         role: "passenger",
         lastLoginAt: new Date(),
       });
-      await emailService.sendWelcomeMail(newUser.email, newUser.name);
+      emailService.sendWelcomeMail(newUser.email, newUser.name).catch((e) => console.error("Welcome email error:", e.message));
       const token = jwt.sign(
         { id: newUser._id, role: newUser.role },
         process.env.JWT_SECRET,
@@ -151,7 +147,7 @@ const googleLogin = async (req, res) => {
     const result = await googleService.findOrCreateGoogleUser(profile);
     const token = googleService.generateToken(result.user);
     if (result.isNew) {
-      await emailService.sendWelcomeMail(result.user.email, result.user.name);
+      emailService.sendWelcomeMail(result.user.email, result.user.name).catch((e) => console.error("Welcome email error:", e.message));
     }
     return response.success(res, {
       user: {

@@ -1,53 +1,29 @@
-// send welcome email and OTP email using nodemailer (SendGrid or Gmail)
-const nodemailer = require("nodemailer");
+// OTP and welcome emails sent via SendGrid API only (no SMTP).
+// Interview: We use SendGrid's HTTP API so emails are reliable and no port/firewall issues.
+const sgMail = require("@sendgrid/mail");
 
-let transporter = null;
+const FROM_NAME = "Smart Airport Ride Pooling";
 
-function getFromAddress() {
-  const sendgridEmail = process.env.SENDGRID_FROM_EMAIL;
-  const smtpUser = process.env.SMTP_USER;
-  const email = sendgridEmail || smtpUser || "noreply@ridepooling.com";
-  return { name: "Smart Airport Ride Pooling", address: email };
+function getFromEmail() {
+  return process.env.SENDGRID_FROM_EMAIL || "noreply@example.com";
 }
 
-function getTransporter() {
-  if (transporter) return transporter;
-  const sendgridKey = process.env.SENDGRID_API_KEY;
-
-  if (sendgridKey) {
-    transporter = nodemailer.createTransport({
-      host: "smtp.sendgrid.net",
-      port: 587,
-      secure: false,
-      auth: {
-        user: "apikey",
-        pass: sendgridKey,
-      },
-      connectionTimeout: 120000,
-      greetingTimeout: 120000,
-    });
-  } else {
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
-    if (!user || !pass) {
-      console.error("SMTP missing: Set SENDGRID_API_KEY + SENDGRID_FROM_EMAIL, or SMTP_USER + SMTP_PASS");
-    }
-    transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user, pass },
-      connectionTimeout: 120000,
-      greetingTimeout: 120000,
-    });
+function isSendGridConfigured() {
+  const key = process.env.SENDGRID_API_KEY;
+  if (!key) {
+    console.error("SendGrid: Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL in .env");
+    return false;
   }
-  return transporter;
+  sgMail.setApiKey(key);
+  return true;
 }
 
 async function sendWelcomeMail(email, name) {
+  if (!isSendGridConfigured()) return false;
   try {
-    const transport = getTransporter();
-    await transport.sendMail({
-      from: getFromAddress(),
+    await sgMail.send({
       to: email,
+      from: { name: FROM_NAME, email: getFromEmail() },
       subject: "Welcome! You are now part of our journey",
       html: `
         <h2>Hello ${name},</h2>
@@ -62,20 +38,23 @@ async function sendWelcomeMail(email, name) {
     });
     return true;
   } catch (err) {
-    console.error("Welcome mail error:", err.message);
+    console.error("Welcome mail error (SendGrid):", err.message);
+    if (err.response?.body) console.error("SendGrid response:", err.response.body);
     return false;
   }
 }
 
 async function sendOtpMail(email, otp, type) {
+  if (!isSendGridConfigured()) return false;
   try {
-    const transport = getTransporter();
-    let subject = "Your Login OTP - Smart Airport Ride Pooling";
-    if (type === "signup") subject = "Your Signup OTP - Smart Airport Ride Pooling";
-    await transport.sendMail({
-      from: getFromAddress(),
+    const subject =
+      type === "signup"
+        ? "Your Signup OTP - Smart Airport Ride Pooling"
+        : "Your Login OTP - Smart Airport Ride Pooling";
+    await sgMail.send({
       to: email,
-      subject: subject,
+      from: { name: FROM_NAME, email: getFromEmail() },
+      subject,
       html: `
         <h2>Your OTP</h2>
         <p>Your OTP is: <strong>${otp}</strong></p>
@@ -87,8 +66,8 @@ async function sendOtpMail(email, otp, type) {
     });
     return true;
   } catch (err) {
-    console.error("OTP mail error:", err.message);
-    if (err.code) console.error("OTP mail error code:", err.code);
+    console.error("OTP mail error (SendGrid):", err.message);
+    if (err.response?.body) console.error("SendGrid response:", err.response.body);
     return false;
   }
 }
