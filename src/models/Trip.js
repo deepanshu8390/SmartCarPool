@@ -17,7 +17,6 @@ const tripSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-tripSchema.index({ trip_id: 1 });
 tripSchema.index({ status: 1 });
 tripSchema.index({ status: 1, createdAt: -1 });
 

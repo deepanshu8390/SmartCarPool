@@ -11,6 +11,7 @@
   "keywords": ["ride-pooling", "airport", "node", "express", "mongodb"],
   "author": "",
   "license": "ISC",
+  "engines": { "node": ">=18.0.0" },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

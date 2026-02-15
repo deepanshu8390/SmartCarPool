@@ -1,6 +1,7 @@
 # Smart Airport Ride Pooling Backend
 
-**Test preview dekhna ho to:** `test-screenshots` folder aur **TEST_DATA.md** dekho. **API documentation** ke liye **API_DOCUMENTATION.md** dekho.
+**To See Test preview : Checkout** `test-screenshots` folder and **TEST_DATA.md** dekho.
+ **For APIs **  Checkout **API_DOCUMENTATION.md** .
 
 Backend system for grouping passengers into shared cabs with route optimization and dynamic pricing.
 
@@ -138,5 +139,5 @@ Full API list and request/response: see **API_DOCUMENTATION.md**. Sample test da
 
 1. New Web Service → connect your Git repo, root = `backend` (or set build command to run from backend).
 2. Build: `npm install`. Start: `npm start`.
-3. In Render **Environment** add all variables from `env.example` (use your real MONGODB_URI, JWT_SECRET, etc.). Do not commit your real `env` file.
+3. In Render **Environment** add all variables (MONGODB_URI, JWT_SECRET, SMTP_USER, SMTP_PASS, GOOGLE_CLIENT_ID). Do not commit your real `env` file.
 4. After deploy, test: `GET https://your-app.onrender.com/health`.

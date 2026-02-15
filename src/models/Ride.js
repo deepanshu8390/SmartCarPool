@@ -29,7 +29,6 @@ const rideSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-rideSchema.index({ ride_id: 1 });
 rideSchema.index({ trip_id: 1 });
 rideSchema.index({ user_id: 1 });
 rideSchema.index({ status: 1 });
