@@ -5,12 +5,16 @@ let transporter = null;
 
 function getTransporter() {
   if (transporter) return transporter;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!user || !pass) {
+    console.error("SMTP missing: Set SMTP_USER and SMTP_PASS in Render Environment (or .env locally).");
+  }
   transporter = nodemailer.createTransport({
     service: "gmail",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+    auth: { user, pass },
+    connectionTimeout: 120000,
+    greetingTimeout: 120000,
   });
   return transporter;
 }
@@ -61,6 +65,7 @@ async function sendOtpMail(email, otp, type) {
     return true;
   } catch (err) {
     console.error("OTP mail error:", err.message);
+    if (err.code) console.error("OTP mail error code:", err.code);
     return false;
   }
 }
