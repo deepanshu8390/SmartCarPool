@@ -67,7 +67,7 @@ async function sendOtpMail(email, otp, type) {
     return true;
   } catch (err) {
     console.error("OTP mail error (SendGrid):", err.message);
-    if (err.response?.body) console.error("SendGrid response:", err.response.body);
+    if (err.response?.body) console.error("SendGrid response:", JSON.stringify(err.response.body));
     return false;
   }
 }

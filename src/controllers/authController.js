@@ -35,8 +35,10 @@ const signupOtp = async (req, res) => {
       expiresAt: new Date(Date.now() + constants.OTP_EXPIRY_MINUTES * 60 * 1000),
     });
 
-    // send email in background so request returns fast (avoids 502 on Render)
-    emailService.sendOtpMail(email, otpCode, "signup").catch((e) => console.error("Signup OTP email error:", e.message));
+    const emailSent = await emailService.sendOtpMail(email, otpCode, "signup");
+    if (!emailSent) {
+      return response.error(res, "Failed to send OTP email. Check SendGrid key and verified sender.", 500);
+    }
     return response.success(res, { message: "OTP sent to your email" }, 200);
   } catch (err) {
     return response.error(res, err.message || "Failed to send OTP", 500);
@@ -66,8 +68,10 @@ const loginOtp = async (req, res) => {
       expiresAt: new Date(Date.now() + constants.OTP_EXPIRY_MINUTES * 60 * 1000),
     });
 
-    // send email in background so request returns fast (avoids 502 on Render)
-    emailService.sendOtpMail(user.email, otpCode, "login").catch((e) => console.error("Login OTP email error:", e.message));
+    const emailSent = await emailService.sendOtpMail(user.email, otpCode, "login");
+    if (!emailSent) {
+      return response.error(res, "Failed to send OTP email. Check SendGrid key and verified sender.", 500);
+    }
     return response.success(res, { message: "OTP sent to your email" }, 200);
   } catch (err) {
     return response.error(res, err.message || "Failed to send OTP", 500);

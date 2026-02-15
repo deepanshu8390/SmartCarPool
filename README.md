@@ -24,7 +24,7 @@ Backend system for grouping passengers into shared cabs with route optimization 
 2. Create env file in the **backend** folder (`.env`). Add:
    - MONGODB_URI
    - JWT_SECRET
-   - For email: **Gmail** (SMTP_USER, SMTP_PASS) works on localhost. **On Render, Gmail SMTP often times out**; use **SendGrid** (SENDGRID_API_KEY, SENDGRID_FROM_EMAIL) for reliable OTP delivery.
+   - For OTP/welcome email: **SendGrid only** — set `SENDGRID_API_KEY` and `SENDGRID_FROM_EMAIL` (verified sender in SendGrid). We use SendGrid’s HTTP API so there are no SMTP/port timeout issues.
    - GOOGLE_CLIENT_ID (for Google login)
 
 3. Start MongoDB (local or Atlas)
@@ -117,7 +117,7 @@ Authorization: Bearer <token>
 
 ## Assumptions
 
-- OTP sent via email (Nodemailer). Mobile OTP requires SMS gateway (Twilio).
+- OTP sent via **SendGrid API** (no SMTP). Mobile OTP would need an SMS gateway (e.g. Twilio).
 - No password - OTP-only auth + Google login
 - Trip expiry: 30 minutes for WAITING trips
 - Cab types: 5-seater (4 passengers, 5 luggage), 7-seater (6 passengers, 7 luggage)
